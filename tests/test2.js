@@ -1,6 +1,10 @@
 "use strict"
 
-const assert = require('chai').assert
+const assert = require('chai').assert,
+      seneca = require('seneca')(),
+      client = seneca.client(),
+      server = require('../server')
+
 
 describe('Array2', function() {
     describe('#indexOf2()', function () {
@@ -18,9 +22,20 @@ describe('Array2', function() {
                 const request = require('request');
                 request('http://jsonplaceholder.typicode.com/posts/1', function (error, response, body) {
                     if (!error && response.statusCode == 200)
-                        resolve(body);
+                        resolve(body)
                     else
-                        reject (error);
+                        reject (error)
+                })
+            })
+        }
+
+        function taz() {
+            return new Promise((resolve, reject) => {
+                client.act({ role:'user', cmd:'login' }, function (err, result) {
+                    if (!err)
+                        resolve(result)
+                    else
+                        reject (err)
                 })
             })
         }
@@ -54,5 +69,17 @@ describe('Array2', function() {
                 assert.deepEqual(JSON.parse(result), valorEsperado)
             })
         })
+
+        it('with seneca', function () {
+
+            async function foo() {
+                const s = await taz(); return s
+            }
+//            throw new Error('ESTO ES UN ERROR PROVOCADOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO')
+
+            return foo().then(result => {
+                assert.deepEqual(result, { loggedIn: true })
+            })
+        });
     })
 })
